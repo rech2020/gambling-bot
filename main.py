@@ -100,5 +100,5 @@ async def slots(ctx: discord.ApplicationCommandInteraction):
         messag+=f"{items[i-1]} "
     await ctx.send(messag)
 
-bot.run(open("token.txt").read(),recurect=True)
+bot.run(open("token.txt").read(),reconnect=True)
 con.close()
