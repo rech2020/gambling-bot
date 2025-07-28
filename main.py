@@ -37,6 +37,11 @@ def init_db():
     ''')
     con.commit()
 
+def get_stats(user_id):
+    cur.execute('SELECT * FROM users WHERE id = ?', (user_id,))
+    stats=cur.fetchone()
+    return stats
+
 #slots stuff
 def spin(symbols_amount: int)->list[int]:
     reel = list(np.random.randint(low=1,high=symbols_amount+1,size=3))
@@ -81,21 +86,22 @@ async def dice(ctx: discord.ApplicationCommandInteraction,sides):
 
 @bot.slash_command(description="chicken (WIP)")
 async def chicken(ctx,guess: int):
-    number=random.randint(1,20)
-    if guess<1 or guess>20:
-        await ctx.send(f"why are you guessing numbers out of the 1 to 20 range are you stupid")
+    stats=get_stats(ctx.author.id)
+    number=random.randint(1,(20+(5*stats[6])))
+    if guess<1 or guess>(20+(5*stats[6])):
+        await ctx.send(f"why are you guessing numbers out of the 1 to {(20+(5*stats[6]))} range are you stupid")
     elif number==guess:
         cur.execute('''INSERT OR IGNORE INTO users (id) VALUES (?)''', (ctx.author.id,))
         cur.execute('''UPDATE users SET chicken_attempts = chicken_attempts + 1  WHERE id = ?''', (ctx.author.id,))
         cur.execute('''UPDATE users SET chicken_wins = chicken_wins + 1  WHERE id = ?''', (ctx.author.id,))
         con.commit()
-        await ctx.send(f"Congratulations, You Won!\nyour guess:{guess}\ncorrect number:{number}\ntotal attempts: not tracked yet")
+        await ctx.send(f"Congratulations, You Won!\nyour guess:{guess}\ncorrect number:{number}\ntotal attempts: {stats[5]+1}")
     else:
         cur.execute('''INSERT OR IGNORE INTO users (id) VALUES (?)''', (ctx.author.id,))
         cur.execute('''UPDATE users SET chicken_attempts = chicken_attempts + 1  WHERE id = ?''', (ctx.author.id,))
         cur.execute('''UPDATE users SET chicken_losses = chicken_losses + 1  WHERE id = ?''', (ctx.author.id,))
         con.commit()
-        await ctx.send(f"You Lost\nyour guess:{guess}\ncorrect number:{number}\ntotal attempts: not tracked yet")
+        await ctx.send(f"You Lost\nyour guess:{guess}\ncorrect number:{number}\ntotal attempts: {stats[5]+1}")
 
 @bot.slash_command(description="gamble (WIP)")
 async def slots(ctx: discord.ApplicationCommandInteraction):
