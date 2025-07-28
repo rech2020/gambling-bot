@@ -18,11 +18,11 @@ bot = commands.Bot(
 con = sqlite3.connect("gamble.db")
 cur = con.cursor()
 
+# actually making the table in the db
 def init_db():
     print("initialising the db...")
-    with cur:
-        cur.execute('''
-        CREATE TABLE IF NOT EXISTS users (
+    cur.execute('''
+    CREATE TABLE IF NOT EXISTS users (
         id INTEGER PRIMARY KEY, 
         money INTEGER DEFAULT 0,
         slots_spins INTEGER DEFAULT 0,
@@ -33,11 +33,11 @@ def init_db():
         chicken_losses INTEGER DEFAULT 0,
         dice_rolls INTEGER DEFAULT 0,
         dice_cliped INTEGER DEFAULT 0
-        )
-        ''')
-    connection.commit()
+    )
+    ''')
+    con.commit()
 
-#slots functions
+#slots stuff
 def spin(symbols_amount: int)->list[int]:
     reel = list(np.random.randint(low=1,high=symbols_amount+1,size=3))
     return reel
@@ -67,12 +67,12 @@ async def dice(ctx: discord.ApplicationCommandInteraction,sides):
         await ctx.send(f"erm actually thats not a valid integer",ephemeral=True)
         return
     if sides < 1:
-        conn.execute('''INSERT OR IGNORE INTO users (id) VALUES (?)''', (ctx.author.id))
-        conn.execute('''UPDATE users SET dice_cliped = dice_cliped + 1  WHERE user_id = ?''', (ctx.author.id))
+        cur.execute('''INSERT OR IGNORE INTO users (id) VALUES (?)''', (ctx.author.id))
+        cur.execute('''UPDATE users SET dice_cliped = dice_cliped + 1  WHERE user_id = ?''', (ctx.author.id))
         await ctx.send(f"You roll a d{sides}\n...it cliped through the table.")
     else:
-        conn.execute('''INSERT OR IGNORE INTO users (id) VALUES (?)''', (ctx.author.id))
-        conn.execute('''UPDATE users SET dice_rolls = dice_rolls + 1  WHERE user_id = ?''', (ctx.author.id))
+        cur.execute('''INSERT OR IGNORE INTO users (id) VALUES (?)''', (ctx.author.id))
+        cur.execute('''UPDATE users SET dice_rolls = dice_rolls + 1  WHERE user_id = ?''', (ctx.author.id))
         await ctx.send(f"You roll a d{sides}\nit landed on {random.randint(1,sides)}")
 
 
@@ -82,14 +82,14 @@ async def chicken(ctx,guess: int):
     if guess<1 or guess>20:
         await ctx.send(f"why are you guessing numbers out of the 1 to 20 range are you stupid")
     elif number==guess:
-        conn.execute('''INSERT OR IGNORE INTO users (id) VALUES (?)''', (ctx.author.id))
-        conn.execute('''UPDATE users SET chicken_attempts = chicken_attempts + 1  WHERE user_id = ?''', (ctx.author.id))
-        conn.execute('''UPDATE users SET chicken_wins = chicken_wins + 1  WHERE user_id = ?''', (ctx.author.id))
+        cur.execute('''INSERT OR IGNORE INTO users (id) VALUES (?)''', (ctx.author.id))
+        cur.execute('''UPDATE users SET chicken_attempts = chicken_attempts + 1  WHERE user_id = ?''', (ctx.author.id))
+        cur.execute('''UPDATE users SET chicken_wins = chicken_wins + 1  WHERE user_id = ?''', (ctx.author.id))
         await ctx.send(f"Congratulations, You Won!\nyour guess:{guess}\ncorrect number:{number}\ntotal attempts: not tracked yet")
     else:
-        conn.execute('''INSERT OR IGNORE INTO users (id) VALUES (?)''', (ctx.author.id))
-        conn.execute('''UPDATE users SET chicken_attempts = chicken_attempts + 1  WHERE user_id = ?''', (ctx.author.id))
-        conn.execute('''UPDATE users SET chicken_losses = chicken_losses + 1  WHERE user_id = ?''', (ctx.author.id))
+        cur.execute('''INSERT OR IGNORE INTO users (id) VALUES (?)''', (ctx.author.id))
+        cur.execute('''UPDATE users SET chicken_attempts = chicken_attempts + 1  WHERE user_id = ?''', (ctx.author.id))
+        cur.execute('''UPDATE users SET chicken_losses = chicken_losses + 1  WHERE user_id = ?''', (ctx.author.id))
         await ctx.send(f"You Lost\nyour guess:{guess}\ncorrect number:{number}\ntotal attempts: not tracked yet")
 
 @bot.slash_command(description="gamble (WIP)")
@@ -100,5 +100,5 @@ async def slots(ctx: discord.ApplicationCommandInteraction):
         messag+=f"{items[i-1]} "
     await ctx.send(messag)
 
-bot.run(open("token.txt").read(),reconnect=True)
+bot.run(open("token.txt").read(),recurect=True)
 con.close()
