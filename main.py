@@ -90,7 +90,7 @@ async def dice(ctx: discord.ApplicationCommandInteraction,sides):
         await ctx.send(f"You roll a d{sides}\nit landed on {result}")
 
 
-@bot.slash_command(description="chicken (WIP)")
+@bot.slash_command(description="guess a number from 1 to (20+(5*wins)) (WIP)")
 async def chicken(ctx,guess: int):
     await ctx.response.defer()
     cur.execute('''INSERT OR IGNORE INTO users (id) VALUES (?)''', (ctx.author.id,))
@@ -105,7 +105,7 @@ async def chicken(ctx,guess: int):
         con.commit()
         try: print(f"{ctx.author.name} ran chicken guessed {guess} and won")
         except: pass
-        await ctx.send(f"Congratulations, You Won!\nyour guess:{guess}\ncorrect number:{number}\nnumber range: 1-{20+(5*stats[6])}\ntotal attempts: {stats[5]+1}"+(f"\nattempts since last win: 0" if stats[8]!=0 and stats[6]!=0 else ""))
+        await ctx.send(f"Congratulations, You Won!\nyour guess:{guess}\ncorrect number:{number}\nnumber range: 1-{20+(5*stats[6])}\ntotal attempts: {stats[5]+1}"+(f"\nattempts since previous win: {stats[8]+1}" if stats[6]>0 else ""))
     else:
         cur.execute('''UPDATE users SET chicken_attempts = chicken_attempts + 1  WHERE id = ?''', (ctx.author.id,))
         cur.execute('''UPDATE users SET chicken_attempts_since_last_win = chicken_attempts_since_last_win + 1  WHERE id = ?''', (ctx.author.id,))
@@ -113,11 +113,11 @@ async def chicken(ctx,guess: int):
         con.commit()
         try: print(f"{ctx.author.name} ran chicken guessed {guess} and lost (the correct number was {number})")
         except: pass
-        await ctx.send(f"You Lost\nyour guess:{guess}\ncorrect number:{number}\nnumber range: 1-{20+(5*stats[6])}\ntotal attempts: {stats[5]+1}"+(f"\nattempts since last win: {stats[8]+1}" if stats[8]!=0 and stats[6]!=0 else ""))
+        await ctx.send(f"You Lost\nyour guess:{guess}\ncorrect number:{number}\nnumber range: 1-{20+(5*stats[6])}\ntotal attempts: {stats[5]+1}"+(f"\nattempts since last win: {stats[8]+1}" if stats[6]>0 and (stats[8]+1)>0 else ""))
 
 @bot.slash_command(description="gamble (WIP)")
 async def slots(ctx: discord.ApplicationCommandInteraction):
-    ctx.response.defer()
+    await ctx.response.defer()
     reel=spin(7)
     messag=""
     for i in reel:
