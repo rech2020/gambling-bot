@@ -68,12 +68,12 @@ async def dice(ctx: discord.ApplicationCommandInteraction,sides):
         await ctx.send(f"erm actually thats not a valid integer",ephemeral=True)
         return
     if sides < 1:
-        cur.execute('''INSERT OR IGNORE INTO users (id) VALUES (?)''', (ctx.author.id))
-        cur.execute('''UPDATE users SET dice_cliped = dice_cliped + 1  WHERE user_id = ?''', (ctx.author.id))
+        cur.execute('''INSERT OR IGNORE INTO users (id) VALUES (?)''', (ctx.author.id,))
+        cur.execute('''UPDATE users SET dice_cliped = dice_cliped + 1  WHERE id = ?''', (ctx.author.id,))
         await ctx.send(f"You roll a d{sides}\n...it cliped through the table.")
     else:
-        cur.execute('''INSERT OR IGNORE INTO users (id) VALUES (?)''', (ctx.author.id))
-        cur.execute('''UPDATE users SET dice_rolls = dice_rolls + 1  WHERE user_id = ?''', (ctx.author.id))
+        cur.execute('''INSERT OR IGNORE INTO users (id) VALUES (?)''', (ctx.author.id,))
+        cur.execute('''UPDATE users SET dice_rolls = dice_rolls + 1  WHERE id = ?''', (ctx.author.id,))
         await ctx.send(f"You roll a d{sides}\nit landed on {random.randint(1,sides)}")
 
 
@@ -83,14 +83,14 @@ async def chicken(ctx,guess: int):
     if guess<1 or guess>20:
         await ctx.send(f"why are you guessing numbers out of the 1 to 20 range are you stupid")
     elif number==guess:
-        cur.execute('''INSERT OR IGNORE INTO users (id) VALUES (?)''', (ctx.author.id))
-        cur.execute('''UPDATE users SET chicken_attempts = chicken_attempts + 1  WHERE user_id = ?''', (ctx.author.id))
-        cur.execute('''UPDATE users SET chicken_wins = chicken_wins + 1  WHERE user_id = ?''', (ctx.author.id))
+        cur.execute('''INSERT OR IGNORE INTO users (id) VALUES (?)''', (ctx.author.id,))
+        cur.execute('''UPDATE users SET chicken_attempts = chicken_attempts + 1  WHERE id = ?''', (ctx.author.id,))
+        cur.execute('''UPDATE users SET chicken_wins = chicken_wins + 1  WHERE id = ?''', (ctx.author.id,))
         await ctx.send(f"Congratulations, You Won!\nyour guess:{guess}\ncorrect number:{number}\ntotal attempts: not tracked yet")
     else:
-        cur.execute('''INSERT OR IGNORE INTO users (id) VALUES (?)''', (ctx.author.id))
-        cur.execute('''UPDATE users SET chicken_attempts = chicken_attempts + 1  WHERE user_id = ?''', (ctx.author.id))
-        cur.execute('''UPDATE users SET chicken_losses = chicken_losses + 1  WHERE user_id = ?''', (ctx.author.id))
+        cur.execute('''INSERT OR IGNORE INTO users (id) VALUES (?)''', (ctx.author.id,))
+        cur.execute('''UPDATE users SET chicken_attempts = chicken_attempts + 1  WHERE id = ?''', (ctx.author.id,))
+        cur.execute('''UPDATE users SET chicken_losses = chicken_losses + 1  WHERE id = ?''', (ctx.author.id,))
         await ctx.send(f"You Lost\nyour guess:{guess}\ncorrect number:{number}\ntotal attempts: not tracked yet")
 
 @bot.slash_command(description="gamble (WIP)")
