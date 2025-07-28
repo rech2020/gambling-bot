@@ -58,6 +58,7 @@ class Reel(Enum):
 async def on_ready():
     print(f'Logged in as {bot.user.name}')
     init_db()
+    print("if there is no error then i assume the db was initialised i might be wrong")
 
 @bot.slash_command(description="roll a n sided dice")
 async def dice(ctx: discord.ApplicationCommandInteraction,sides):
