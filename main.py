@@ -3,6 +3,7 @@ from disnake.ext import commands
 import random
 import numpy as np
 from enum import Enum
+import sqlite3
 
 intents=discord.Intents.all()
 bot = commands.Bot(
@@ -12,6 +13,29 @@ bot = commands.Bot(
     default_contexts=discord.InteractionContextTypes(bot_dm=True,guild=True,private_channel=True),
     #proxy="http://127.0.0.1:8830" # ignore this its just a leftover from me trying to get the bot working
     )
+
+#db stuff
+con = sqlite3.connect("gamble.db")
+cur = con.cursor()
+
+def init_db():
+    print("initialising the db...")
+    with cur:
+        cur.execute('''
+        CREATE TABLE IF NOT EXISTS users (
+        id INTEGER PRIMARY KEY, 
+        money INTEGER DEFAULT 0,
+        slots_spins INTEGER DEFAULT 0,
+        slots_wins INTEGER DEFAULT 0,
+        slots_big_wins INTEGER DEFAULT 0,
+        chicken_attempts INTEGER DEFAULT 0,
+        chicken_wins INTEGER DEFAULT 0,
+        chicken_losses INTEGER DEFAULT 0,
+        dice_rolls INTEGER DEFAULT 0,
+        dice_cliped INTEGER DEFAULT 0
+        )
+        ''')
+    connection.commit()
 
 #slots functions
 def spin(symbols_amount: int)->list[int]:
@@ -33,6 +57,7 @@ class Reel(Enum):
 @bot.event
 async def on_ready():
     print(f'Logged in as {bot.user.name}')
+    init_db()
 
 @bot.slash_command(description="roll a n sided dice")
 async def dice(ctx: discord.ApplicationCommandInteraction,sides):
@@ -42,8 +67,12 @@ async def dice(ctx: discord.ApplicationCommandInteraction,sides):
         await ctx.send(f"erm actually thats not a valid integer",ephemeral=True)
         return
     if sides < 1:
+        conn.execute('''INSERT OR IGNORE INTO users (id) VALUES (?)''', (ctx.author.id))
+        conn.execute('''UPDATE users SET dice_cliped = dice_cliped + 1  WHERE user_id = ?''', (ctx.author.id))
         await ctx.send(f"You roll a d{sides}\n...it cliped through the table.")
     else:
+        conn.execute('''INSERT OR IGNORE INTO users (id) VALUES (?)''', (ctx.author.id))
+        conn.execute('''UPDATE users SET dice_rolls = dice_rolls + 1  WHERE user_id = ?''', (ctx.author.id))
         await ctx.send(f"You roll a d{sides}\nit landed on {random.randint(1,sides)}")
 
 
@@ -53,8 +82,14 @@ async def chicken(ctx,guess: int):
     if guess<1 or guess>20:
         await ctx.send(f"why are you guessing numbers out of the 1 to 20 range are you stupid")
     elif number==guess:
+        conn.execute('''INSERT OR IGNORE INTO users (id) VALUES (?)''', (ctx.author.id))
+        conn.execute('''UPDATE users SET chicken_attempts = chicken_attempts + 1  WHERE user_id = ?''', (ctx.author.id))
+        conn.execute('''UPDATE users SET chicken_wins = chicken_wins + 1  WHERE user_id = ?''', (ctx.author.id))
         await ctx.send(f"Congratulations, You Won!\nyour guess:{guess}\ncorrect number:{number}\ntotal attempts: not tracked yet")
     else:
+        conn.execute('''INSERT OR IGNORE INTO users (id) VALUES (?)''', (ctx.author.id))
+        conn.execute('''UPDATE users SET chicken_attempts = chicken_attempts + 1  WHERE user_id = ?''', (ctx.author.id))
+        conn.execute('''UPDATE users SET chicken_losses = chicken_losses + 1  WHERE user_id = ?''', (ctx.author.id))
         await ctx.send(f"You Lost\nyour guess:{guess}\ncorrect number:{number}\ntotal attempts: not tracked yet")
 
 @bot.slash_command(description="gamble (WIP)")
@@ -66,3 +101,4 @@ async def slots(ctx: discord.ApplicationCommandInteraction):
     await ctx.send(messag)
 
 bot.run(open("token.txt").read(),reconnect=True)
+con.close()
