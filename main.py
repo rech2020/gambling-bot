@@ -76,11 +76,16 @@ async def dice(ctx: discord.ApplicationCommandInteraction,sides):
     if sides < 1:
         cur.execute('''UPDATE users SET dice_cliped = dice_cliped + 1  WHERE id = ?''', (ctx.author.id,))
         con.commit()
+        try: print(f"{ctx.author.name} tried to roll a d{sides} (which clipped through the table)")
+        except: pass
         await ctx.send(f"You roll a d{sides}\n...it cliped through the table.")
     else:
+        result=random.randint(1,sides)
         cur.execute('''UPDATE users SET dice_rolls = dice_rolls + 1  WHERE id = ?''', (ctx.author.id,))
         con.commit()
-        await ctx.send(f"You roll a d{sides}\nit landed on {random.randint(1,sides)}")
+        try: print(f"{ctx.author.name} rolled a d{sides} and it laned on {result}")
+        except: pass
+        await ctx.send(f"You roll a d{sides}\nit landed on {result}")
 
 
 @bot.slash_command(description="chicken (WIP)")
@@ -89,17 +94,21 @@ async def chicken(ctx,guess: int):
     stats=get_stats(ctx.author.id)
     number=random.randint(1,(20+(5*stats[6])))
     if guess<1 or guess>(20+(5*stats[6])):
-        await ctx.send(f"why are you guessing numbers out of the 1 to {(20+(5*stats[6]))} range are you stupid")
+        await ctx.send(f"why are you guessing numbers out of the 1 to {20+(5*stats[6])} range are you stupid")
     elif number==guess:
         cur.execute('''UPDATE users SET chicken_attempts = chicken_attempts + 1  WHERE id = ?''', (ctx.author.id,))
         cur.execute('''UPDATE users SET chicken_wins = chicken_wins + 1  WHERE id = ?''', (ctx.author.id,))
         con.commit()
-        await ctx.send(f"Congratulations, You Won!\nyour guess:{guess}\ncorrect number:{number}\ntotal attempts: {stats[5]+1}")
+        try: print(f"{ctx.author.name} ran chicken guessed {guess} and won")
+        except: pass
+        await ctx.send(f"Congratulations, You Won!\nyour guess:{guess}\ncorrect number:{number}\nnumber range: 1-{20+(5*stats[6])}\ntotal attempts: {stats[5]+1}")
     else:
         cur.execute('''UPDATE users SET chicken_attempts = chicken_attempts + 1  WHERE id = ?''', (ctx.author.id,))
         cur.execute('''UPDATE users SET chicken_losses = chicken_losses + 1  WHERE id = ?''', (ctx.author.id,))
         con.commit()
-        await ctx.send(f"You Lost\nyour guess:{guess}\ncorrect number:{number}\ntotal attempts: {stats[5]+1}")
+        try: print(f"{ctx.author.name} ran chicken guessed {guess} and lost (the correct number was {number})")
+        except: pass
+        await ctx.send(f"You Lost\nyour guess:{guess}\ncorrect number:{number}\nnumber range: 1-{20+(5*stats[6])}\ntotal attempts: {stats[5]+1}")
 
 @bot.slash_command(description="gamble (WIP)")
 async def slots(ctx: discord.ApplicationCommandInteraction):
