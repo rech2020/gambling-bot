@@ -10,7 +10,7 @@ bot = commands.Bot(
     intents=intents,
     default_install_types=discord.ApplicationInstallTypes(user=True,guild=True), 
     default_contexts=discord.InteractionContextTypes(bot_dm=True,guild=True,private_channel=True),
-    #proxy="http://127.0.0.1:8830"
+    #proxy="http://127.0.0.1:8830" # ignore this its just a leftover from me trying to get the bot working
     )
 
 #slots functions
