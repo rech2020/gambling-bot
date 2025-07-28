@@ -68,7 +68,7 @@ async def on_ready():
 
 @bot.slash_command(description="roll a n sided dice")
 async def dice(ctx: discord.ApplicationCommandInteraction,sides):
-    ctx.response.defer()
+    await ctx.response.defer()
     cur.execute('''INSERT OR IGNORE INTO users (id) VALUES (?)''', (ctx.author.id,))
     try:
         sides=int(sides)
@@ -92,7 +92,7 @@ async def dice(ctx: discord.ApplicationCommandInteraction,sides):
 
 @bot.slash_command(description="chicken (WIP)")
 async def chicken(ctx,guess: int):
-    ctx.response.defer()
+    await ctx.response.defer()
     cur.execute('''INSERT OR IGNORE INTO users (id) VALUES (?)''', (ctx.author.id,))
     stats=get_stats(ctx.author.id)
     number=random.randint(1,(20+(5*stats[6])))
