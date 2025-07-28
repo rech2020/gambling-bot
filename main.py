@@ -31,6 +31,7 @@ def init_db():
         chicken_attempts INTEGER DEFAULT 0,
         chicken_wins INTEGER DEFAULT 0,
         chicken_losses INTEGER DEFAULT 0,
+        chicken_attempts_since_last_win INTEGER DEFAULT 0,
         dice_rolls INTEGER DEFAULT 0,
         dice_cliped INTEGER DEFAULT 0
     )
@@ -97,18 +98,20 @@ async def chicken(ctx,guess: int):
         await ctx.send(f"why are you guessing numbers out of the 1 to {20+(5*stats[6])} range are you stupid")
     elif number==guess:
         cur.execute('''UPDATE users SET chicken_attempts = chicken_attempts + 1  WHERE id = ?''', (ctx.author.id,))
+        cur.execute('''UPDATE users SET chicken_attempts_since_last_win = 0  WHERE id = ?''', (ctx.author.id,))
         cur.execute('''UPDATE users SET chicken_wins = chicken_wins + 1  WHERE id = ?''', (ctx.author.id,))
         con.commit()
         try: print(f"{ctx.author.name} ran chicken guessed {guess} and won")
         except: pass
-        await ctx.send(f"Congratulations, You Won!\nyour guess:{guess}\ncorrect number:{number}\nnumber range: 1-{20+(5*stats[6])}\ntotal attempts: {stats[5]+1}")
+        await ctx.send(f"Congratulations, You Won!\nyour guess:{guess}\ncorrect number:{number}\nnumber range: 1-{20+(5*stats[6])}\ntotal attempts: {stats[5]+1}"+(f"\nattempts since last win: 0" if stats[8]!=0 and stats[6]!=0 else ""))
     else:
         cur.execute('''UPDATE users SET chicken_attempts = chicken_attempts + 1  WHERE id = ?''', (ctx.author.id,))
+        cur.execute('''UPDATE users SET chicken_attempts_since_last_win = chicken_attempts_since_last_win + 1  WHERE id = ?''', (ctx.author.id,))
         cur.execute('''UPDATE users SET chicken_losses = chicken_losses + 1  WHERE id = ?''', (ctx.author.id,))
         con.commit()
         try: print(f"{ctx.author.name} ran chicken guessed {guess} and lost (the correct number was {number})")
         except: pass
-        await ctx.send(f"You Lost\nyour guess:{guess}\ncorrect number:{number}\nnumber range: 1-{20+(5*stats[6])}\ntotal attempts: {stats[5]+1}")
+        await ctx.send(f"You Lost\nyour guess:{guess}\ncorrect number:{number}\nnumber range: 1-{20+(5*stats[6])}\ntotal attempts: {stats[5]+1}"+(f"\nattempts since last win: {stats[8]+1}" if stats[8]!=0 and stats[6]!=0 else ""))
 
 @bot.slash_command(description="gamble (WIP)")
 async def slots(ctx: discord.ApplicationCommandInteraction):
