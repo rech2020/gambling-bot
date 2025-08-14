@@ -24,7 +24,7 @@ def init_db():
     cur.execute('''
     CREATE TABLE IF NOT EXISTS users (
         id INTEGER PRIMARY KEY, 
-        money INTEGER DEFAULT 0,
+        money INTEGER DEFAULT 500,
         slots_spins INTEGER DEFAULT 0,
         slots_wins INTEGER DEFAULT 0,
         slots_big_wins INTEGER DEFAULT 0,
