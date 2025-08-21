@@ -14,6 +14,8 @@ bot = commands.Bot(
     #proxy="http://127.0.0.1:8830" # ignore this its just a leftover from me trying to get the bot working
     )
 
+global db_initialised; db_initialised = False
+
 #db stuff
 con = sqlite3.connect("gamble.db")
 cur = con.cursor()
@@ -63,8 +65,10 @@ class Reel(Enum):
 @bot.event
 async def on_ready():
     print(f'Logged in as {bot.user.name}')
-    init_db()
-    print("if there is no error then i assume the db was initialised i might be wrong")
+    if not db_initialised():
+        init_db()
+        print("if there is no error then i assume the db was initialised i might be wrong")
+        db_initialised=True
 
 @bot.slash_command(description="roll a n sided dice")
 async def dice(ctx: discord.ApplicationCommandInteraction,sides):
