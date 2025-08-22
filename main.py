@@ -64,8 +64,9 @@ class Reel(Enum):
 
 @bot.event
 async def on_ready():
+    global db_initialised
     print(f'Logged in as {bot.user.name}')
-    if not db_initialised():
+    if not db_initialised:
         init_db()
         print("if there is no error then i assume the db was initialised i might be wrong")
         db_initialised=True
