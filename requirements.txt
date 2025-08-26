@@ -1,3 +1,2 @@
 disnake
 numpy
-sqlite3
