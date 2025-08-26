@@ -4,6 +4,7 @@ import random
 import numpy as np
 from enum import Enum
 import sqlite3
+import asyncio
 
 intents=discord.Intents.all()
 bot = commands.Bot(
@@ -28,6 +29,7 @@ def init_db():
         id INTEGER PRIMARY KEY, 
         money INTEGER DEFAULT 500,
         slots_spins INTEGER DEFAULT 0,
+        slots_small_wins INTEGER DEFAULT 0,
         slots_wins INTEGER DEFAULT 0,
         slots_big_wins INTEGER DEFAULT 0,
         chicken_attempts INTEGER DEFAULT 0,
@@ -46,8 +48,8 @@ def get_stats(user_id):
     return stats
 
 #slots stuff
-def spin(symbols_amount: int)->list[int]:
-    reel = list(np.random.randint(low=1,high=symbols_amount+1,size=3))
+def spin(symbols_amount: int, size:int=3)->list[int]:
+    reel = list(np.random.randint(low=1,high=symbols_amount+1,size=size,dtype=int))
     return reel
 
 items = ["🍋","🍒","🍊","🍍","🥭","<:cantaloupe:1398171149359120426>","7️⃣"]
@@ -123,11 +125,66 @@ async def chicken(ctx,guess: int):
 @bot.slash_command(description="gamble (WIP)")
 async def slots(ctx: discord.ApplicationCommandInteraction):
     await ctx.response.defer()
+    cur.execute('''INSERT OR IGNORE INTO users (id) VALUES (?)''', (ctx.author.id,))
+
+    embed = discord.Embed(
+        title=":slot_machine: Slots Machine Thingy",
+        description="Thingy go spinny\n# :arrows_counterclockwise::arrows_counterclockwise::arrows_counterclockwise:",
+        color=discord.Colour.red(),
+    )
+
+    frames = 5 # amount of frames until the actual reel
+    delay_between_frames = 0.5  # seconds
+    await ctx.send(embed=embed)
+    message = await ctx.original_response()
+
+    # animation thingy
+    for i in range(frames):
+        spinning_reel=spin(7)
+        spinnygospin=""
+        for i in spinning_reel:
+            spinnygospin+=f"{items[i-1]}"
+        embed = discord.Embed(
+            title=":slot_machine: Slots Machine Thingy",
+            description=f"thingy go spinny\n# {spinnygospin}",
+            color=discord.Colour.red(),
+        )
+        await message.edit(embed=embed)
+        await asyncio.sleep(delay_between_frames)
+
     reel=spin(7)
-    messag=""
+    reel_emojified=""
     for i in reel:
-        messag+=f"{items[i-1]} "
-    await ctx.send(messag)
+        reel_emojified+=f"{items[i-1]}"
+    
+    # win condition check
+    if reel[0]==reel[1] and reel[1]==reel[2]:
+        cur.execute('''UPDATE users SET slots_spins = slots_spins + 1  WHERE id = ?''', (ctx.author.id,))
+        cur.execute('''UPDATE users SET slots_wins = slots_wins + 1  WHERE id = ?''', (ctx.author.id,))
+        if reel[0]==7:
+            cur.execute('''UPDATE users SET slots_big_wins = slots_big_wins + 1  WHERE id = ?''', (ctx.author.id,))
+            win_text="HOLY SJIT JACKPOT"
+        else:
+            win_text="You Won!"
+        con.commit()
+    elif reel[0]==reel[1] or reel[0]==reel[2] or reel[1]==reel[2]:
+        cur.execute('''UPDATE users SET slots_spins = slots_spins + 1  WHERE id = ?''', (ctx.author.id,))
+        cur.execute('''UPDATE users SET slots_wins = slots_wins + 1  WHERE id = ?''', (ctx.author.id,))
+        cur.execute('''UPDATE users SET slots_small_wins = slots_small_wins + 1  WHERE id = ?''', (ctx.author.id,))
+        con.commit()
+        win_text="small win idk"
+    else:
+        cur.execute('''UPDATE users SET slots_spins = slots_spins + 1  WHERE id = ?''', (ctx.author.id,))
+        con.commit()
+        win_text="congratulations you lost"
+    
+    embed = discord.Embed(
+        title=":slot_machine: Slots Machine Thingy",
+        description=f"{win_text}\n# {reel_emojified}",
+        color=discord.Colour.red())
+    await message.edit(embed=embed)
 
 bot.run(open("token.txt").read(),reconnect=True)
+print("ok shutting down")
 con.close()
+print("connection closed")
