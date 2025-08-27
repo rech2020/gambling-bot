@@ -197,7 +197,7 @@ async def stats(ctx: discord.ApplicationCommandInteraction):
     await ctx.response.defer()
     stats=get_stats(ctx.author.id)
     embed = discord.Embed(
-        title="Stats",
+        title=f"{ctx.author.name}'s Stats",
         description=f"Money:{stats[1]}\nTotal Slots Spins:{stats[2]}\nSlots small wins:{stats[3]}\nSlots wins:{stats[4]}\nSlots big wins/jackpots:{stats[5]}\nChicken Attempts:{stats[6]}\nChicken wins:{stats[7]}\nChicken losses:{stats[8]}\nAttempts since last chicken win:{stats[9]}\nDice rolls:{stats[10]}\nDice clipped:{stats[11]}\n",
         color=discord.Colour.red(),
     )
