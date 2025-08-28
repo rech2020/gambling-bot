@@ -43,8 +43,12 @@ def init_db():
 
 def get_stats(user_id):
     cur.execute('SELECT * FROM users WHERE id = ?', (user_id,))
-    stats=cur.fetchone()
-    return stats
+    stats = cur.fetchone()
+    if stats is None:
+        return None
+    column_names = [desc[0] for desc in cur.description]
+    result_dict = dict(zip(column_names, stats))
+    return result_dict
 
 #slots stuff
 def spin(symbols_amount: int, size:int=3)->list[int]:
@@ -101,9 +105,9 @@ async def chicken(ctx,guess: int):
     await ctx.response.defer()
     cur.execute('''INSERT OR IGNORE INTO users (id) VALUES (?)''', (ctx.author.id,))
     stats=get_stats(ctx.author.id)
-    number=random.randint(1,(20+(5*stats[7])))
-    if guess<1 or guess>(20+(5*stats[7])):
-        await ctx.send(f"why are you guessing numbers out of the 1 to {20+(5*stats[7])} range are you stupid")
+    number=random.randint(1,(20+(5*stats['chicken_wins'])))
+    if guess<1 or guess>(20+(5*stats['chicken_wins'])):
+        await ctx.send(f"why are you guessing numbers out of the 1 to {20+(5*stats['chicken_wins'])} range are you stupid")
     elif number==guess:
         cur.execute('''UPDATE users SET chicken_attempts = chicken_attempts + 1  WHERE id = ?''', (ctx.author.id,))
         cur.execute('''UPDATE users SET chicken_attempts_since_last_win = 0  WHERE id = ?''', (ctx.author.id,))
@@ -111,7 +115,7 @@ async def chicken(ctx,guess: int):
         con.commit()
         try: print(f"{ctx.author.name} ran chicken guessed {guess} and won")
         except: pass
-        await ctx.send(f"Congratulations, You Won!\nyour guess:{guess}\ncorrect number:{number}\nnumber range: 1-{20+(5*stats[7])}\ntotal attempts: {stats[6]+1}"+(f"\nattempts since previous win: {stats[9]+1}" if stats[7]>0 else ""))
+        await ctx.send(f"Congratulations, You Won!\nyour guess:{guess}\ncorrect number:{number}\nnumber range: 1-{20+(5*stats['chicken_wins'])}\ntotal attempts: {stats['chicken_attempts']+1}"+(f"\nattempts since previous win: {stats['chicken_attempts_since_last_win']+1}" if stats['chicken_wins']>0 else ""))
     else:
         cur.execute('''UPDATE users SET chicken_attempts = chicken_attempts + 1  WHERE id = ?''', (ctx.author.id,))
         cur.execute('''UPDATE users SET chicken_attempts_since_last_win = chicken_attempts_since_last_win + 1  WHERE id = ?''', (ctx.author.id,))
@@ -119,7 +123,7 @@ async def chicken(ctx,guess: int):
         con.commit()
         try: print(f"{ctx.author.name} ran chicken guessed {guess} and lost (the correct number was {number})")
         except: pass
-        await ctx.send(f"You Lost\nyour guess:{guess}\ncorrect number:{number}\nnumber range: 1-{20+(5*stats[7])}\ntotal attempts: {stats[6]+1}"+(f"\nattempts since last win: {stats[9]+1}" if stats[7]>0 and (stats[9])>0 else ""))
+        await ctx.send(f"You Lost\nyour guess:{guess}\ncorrect number:{number}\nnumber range: 1-{20+(5*stats['chicken_wins'])}\ntotal attempts: {stats['chicken_attempts']+1}"+(f"\nattempts since last win: {stats['chicken_attempts_since_last_win']+1}" if stats['chicken_wins']>0 and (stats['chicken_attempts_since_last_win'])>0 else ""))
 
 @bot.slash_command(description="gamble (WIP)")
 async def slots(ctx: discord.ApplicationCommandInteraction):
@@ -198,7 +202,7 @@ async def stats(ctx: discord.ApplicationCommandInteraction):
     stats=get_stats(ctx.author.id)
     embed = discord.Embed(
         title=f"{ctx.author.name}'s Stats",
-        description=f"Money:{stats[1]}\nTotal Slots Spins:{stats[2]}\nSlots small wins:{stats[3]}\nSlots wins:{stats[4]}\nSlots big wins/jackpots:{stats[5]}\nChicken Attempts:{stats[6]}\nChicken wins:{stats[7]}\nChicken losses:{stats[8]}\nAttempts since last chicken win:{stats[9]}\nDice rolls:{stats[10]}\nDice clipped:{stats[11]}\n",
+        description=f"Money:{stats['money']}\nTotal Slots Spins:{stats['slots_spins']}\nSlots small wins:{stats['slots_small_wins']}\nSlots wins:{stats['slots_wins']}\nSlots big wins/jackpots:{stats['slots_big_wins']}\nChicken Attempts:{stats['chicken_attempts']}\nChicken wins:{stats['chicken_wins']}\nChicken losses:{stats['chicken_losses']}\nAttempts since last chicken win:{stats['chicken_attempts_since_last_win']}\nDice rolls:{stats['dice_rolls']}\nDice clipped:{stats['dice_cliped']}\n",
         color=discord.Colour.red(),
     )
     await ctx.send(embed=embed)
