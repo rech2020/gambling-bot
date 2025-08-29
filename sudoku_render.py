@@ -1,6 +1,5 @@
 from PIL import Image, ImageDraw, ImageFont
 import random
-import sys
 import os
 import math
 
