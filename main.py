@@ -137,7 +137,7 @@ async def chicken(ctx,guess: int):
         
         embed.title="You Lost"
         embed.colour=discord.Colour.red()
-        stats["chicken_attempts_since_last_win"]=1
+        stats["chicken_attempts_since_last_win"]+=1
 
         #await ctx.send(f"You Lost\nyour guess:{guess}\ncorrect number:{number}\nnumber range: 1-{20+(5*stats['chicken_wins'])}\ntotal attempts: {stats['chicken_attempts']+1}"+(f"\nattempts since last win: {stats['chicken_attempts_since_last_win']+1}" if stats['chicken_wins']>0 and (stats['chicken_attempts_since_last_win'])>0 else ""))
     
