@@ -103,11 +103,16 @@ async def dice(ctx: discord.ApplicationCommandInteraction,sides):
 @bot.slash_command(description="guess a number from 1 to (20+(5*wins)) (WIP)")
 async def chicken(ctx,guess: int):
     await ctx.response.defer()
+
+    embed = discord.Embed()
+
     cur.execute('''INSERT OR IGNORE INTO users (id) VALUES (?)''', (ctx.author.id,))
     stats=get_stats(ctx.author.id)
+    
     number=random.randint(1,(20+(5*stats['chicken_wins'])))
     if guess<1 or guess>(20+(5*stats['chicken_wins'])):
         await ctx.send(f"why are you guessing numbers out of the 1 to {20+(5*stats['chicken_wins'])} range are you stupid")
+        return
     elif number==guess:
         cur.execute('''UPDATE users SET chicken_attempts = chicken_attempts + 1  WHERE id = ?''', (ctx.author.id,))
         cur.execute('''UPDATE users SET chicken_attempts_since_last_win = 0  WHERE id = ?''', (ctx.author.id,))
@@ -115,7 +120,13 @@ async def chicken(ctx,guess: int):
         con.commit()
         try: print(f"{ctx.author.name} ran chicken guessed {guess} and won")
         except: pass
-        await ctx.send(f"Congratulations, You Won!\nyour guess:{guess}\ncorrect number:{number}\nnumber range: 1-{20+(5*stats['chicken_wins'])}\ntotal attempts: {stats['chicken_attempts']+1}"+(f"\nattempts since previous win: {stats['chicken_attempts_since_last_win']+1}" if stats['chicken_wins']>0 else ""))
+
+        embed.title="Congratulations, You Won!"
+        embed.colour=discord.Colour.from_rgb(64,191,64)
+        stats["chicken_wins"]+=1
+        stats["chicken_attempts_since_last_win"]=0
+
+        #await ctx.send(f"Congratulations, You Won!\nyour guess:{guess}\ncorrect number:{number}\nnumber range: 1-{20+(5*stats['chicken_wins'])}\ntotal attempts: {stats['chicken_attempts']+1}"+(f"\nattempts since previous win: {stats['chicken_attempts_since_last_win']+1}" if stats['chicken_wins']>0 else ""))
     else:
         cur.execute('''UPDATE users SET chicken_attempts = chicken_attempts + 1  WHERE id = ?''', (ctx.author.id,))
         cur.execute('''UPDATE users SET chicken_attempts_since_last_win = chicken_attempts_since_last_win + 1  WHERE id = ?''', (ctx.author.id,))
@@ -123,7 +134,24 @@ async def chicken(ctx,guess: int):
         con.commit()
         try: print(f"{ctx.author.name} ran chicken guessed {guess} and lost (the correct number was {number})")
         except: pass
-        await ctx.send(f"You Lost\nyour guess:{guess}\ncorrect number:{number}\nnumber range: 1-{20+(5*stats['chicken_wins'])}\ntotal attempts: {stats['chicken_attempts']+1}"+(f"\nattempts since last win: {stats['chicken_attempts_since_last_win']+1}" if stats['chicken_wins']>0 and (stats['chicken_attempts_since_last_win'])>0 else ""))
+        
+        embed.title="You Lost"
+        embed.colour=discord.Colour.red()
+        stats["chicken_attempts_since_last_win"]=0
+
+        #await ctx.send(f"You Lost\nyour guess:{guess}\ncorrect number:{number}\nnumber range: 1-{20+(5*stats['chicken_wins'])}\ntotal attempts: {stats['chicken_attempts']+1}"+(f"\nattempts since last win: {stats['chicken_attempts_since_last_win']+1}" if stats['chicken_wins']>0 and (stats['chicken_attempts_since_last_win'])>0 else ""))
+    
+    embed.add_field("Your guess", guess)
+    embed.add_field("","")
+    embed.add_field("Correct number", number)
+    embed.add_field("Number range", f"1-{20+(5*stats['chicken_wins'])}")
+    embed.add_field("","")
+    embed.add_field("Wins",stats["chicken_wins"])
+    embed.add_field("Total attempts", stats["chicken_attempts"]+1)
+    embed.add_field("","")
+    embed.add_field("Attempts since last win", stats["chicken_attempts_since_last_win"])
+
+    await ctx.send(embed=embed)
 
 @bot.slash_command(description="gamble (WIP)")
 async def slots(ctx: discord.ApplicationCommandInteraction):
