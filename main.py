@@ -230,7 +230,19 @@ async def stats(ctx: discord.ApplicationCommandInteraction):
     stats=get_stats(ctx.author.id)
     embed = discord.Embed(
         title=f"{ctx.author.name}'s Stats",
-        description=f"Money:{stats['money']}\nTotal Slots Spins:{stats['slots_spins']}\nSlots small wins:{stats['slots_small_wins']}\nSlots wins:{stats['slots_wins']}\nSlots big wins/jackpots:{stats['slots_big_wins']}\nChicken Attempts:{stats['chicken_attempts']}\nChicken wins:{stats['chicken_wins']}\nChicken losses:{stats['chicken_losses']}\nAttempts since last chicken win:{stats['chicken_attempts_since_last_win']}\nDice rolls:{stats['dice_rolls']}\nDice clipped:{stats['dice_cliped']}\n",
+        description=f'''
+                    Money:{stats['money']}
+                    Total Slots Spins:{stats['slots_spins']}
+                    Slots small wins:{stats['slots_small_wins']}
+                    Slots wins:{stats['slots_wins']}
+                    Slots big wins/jackpots:{stats['slots_big_wins']}
+                    Chicken Attempts:{stats['chicken_attempts']}
+                    Chicken wins:{stats['chicken_wins']}
+                    Chicken losses:{stats['chicken_losses']}
+                    Attempts since last chicken win:{stats['chicken_attempts_since_last_win']}
+                    Dice rolls:{stats['dice_rolls']}
+                    Dice clipped:{stats['dice_cliped']}
+                    ''',
         color=discord.Colour.red(),
     )
     await ctx.send(embed=embed)
@@ -238,5 +250,6 @@ async def stats(ctx: discord.ApplicationCommandInteraction):
 
 bot.run(open("token.txt").read(),reconnect=True)
 print("ok shutting down")
+con.commit()
 con.close()
 print("connection closed")
