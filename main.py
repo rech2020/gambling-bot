@@ -143,10 +143,10 @@ async def chicken(ctx,guess: int):
     
     embed.add_field("Your guess", guess,inline=False)
     embed.add_field("Correct number", number,inline=False)
-    embed.add_field("Number range", f"1-{20+(5*stats['chicken_wins'])}",False)
-    embed.add_field("Wins",stats["chicken_wins"],False)
-    embed.add_field("Total attempts", stats["chicken_attempts"]+1,False)
-    embed.add_field("Attempts since last win", stats["chicken_attempts_since_last_win"],False)
+    embed.add_field("Number range", f"1-{20+(5*stats['chicken_wins'])}",inline=False)
+    embed.add_field("Wins",stats["chicken_wins"],inline=False)
+    embed.add_field("Total attempts", stats["chicken_attempts"]+1,inline=False)
+    embed.add_field("Attempts since last win", stats["chicken_attempts_since_last_win"],inline=False)
 
     await ctx.send(embed=embed)
 
