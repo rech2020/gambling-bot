@@ -141,12 +141,12 @@ async def chicken(ctx,guess: int):
 
         #await ctx.send(f"You Lost\nyour guess:{guess}\ncorrect number:{number}\nnumber range: 1-{20+(5*stats['chicken_wins'])}\ntotal attempts: {stats['chicken_attempts']+1}"+(f"\nattempts since last win: {stats['chicken_attempts_since_last_win']+1}" if stats['chicken_wins']>0 and (stats['chicken_attempts_since_last_win'])>0 else ""))
     
-    embed.add_field("Your guess", guess,false)
-    embed.add_field("Correct number", number,false)
-    embed.add_field("Number range", f"1-{20+(5*stats['chicken_wins'])}",false)
-    embed.add_field("Wins",stats["chicken_wins"],false)
-    embed.add_field("Total attempts", stats["chicken_attempts"]+1,false)
-    embed.add_field("Attempts since last win", stats["chicken_attempts_since_last_win"],false)
+    embed.add_field("Your guess", guess,inline=False)
+    embed.add_field("Correct number", number,inline=False)
+    embed.add_field("Number range", f"1-{20+(5*stats['chicken_wins'])}",False)
+    embed.add_field("Wins",stats["chicken_wins"],False)
+    embed.add_field("Total attempts", stats["chicken_attempts"]+1,False)
+    embed.add_field("Attempts since last win", stats["chicken_attempts_since_last_win"],False)
 
     await ctx.send(embed=embed)
 
