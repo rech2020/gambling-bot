@@ -244,6 +244,8 @@ async def stats(ctx: discord.ApplicationCommandInteraction):
     )
     await ctx.send(embed=embed)
 
+print("loading the sudoku cog...")
+bot.load_extension("cogs.sudoku.sudokucmd")
 
 bot.run(open("token.txt").read(),reconnect=True)
 print("ok shutting down")
