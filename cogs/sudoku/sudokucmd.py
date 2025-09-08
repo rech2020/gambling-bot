@@ -77,7 +77,7 @@ class SudokuCommand(commands.Cog):
         embed.add_field(name="", value="", inline=True)
         embed.add_field(name="⏱️ Time", value=f"Started <t:{int(timestamp.timestamp())}:R>", inline=True)
 
-        await ctx.send(sudoku1,embed=embed)
+        await ctx.send(embed=embed)
     
 
 def setup(bot: commands.Bot):
