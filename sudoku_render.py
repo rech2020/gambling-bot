@@ -100,7 +100,7 @@ def drawsudoku(width:int=9,height:int=9,cell_size:int=60,skin:dict=None,numbers_
 
     return img
 
-def drawsudokuv2(width:int=3,height:int=None,cell_size:int=60,skin:dict=None,board:list[list]=None,user_board:list[list]=None)-> Image.Image:
+def drawsudokuv2(width:int=3,height:int=None,cell_size:int=60,skin:dict=None,board:list[list]=None,user_board:list[list]=None,note_board:list[list[list]]=None)-> Image.Image:
     """
     draws the given board
     :param width: the board's width, e.g. a standard sudoku has a width of 3
@@ -109,6 +109,7 @@ def drawsudokuv2(width:int=3,height:int=None,cell_size:int=60,skin:dict=None,boa
     :param skin: a dictionary containing hex color values for background, borders, and fonts
     :param board: a matrix containing the sudoku board obviously
     :param user_board: a matrix containing the numbers that the user wrote
+    :param note_board: a matrix containing a list of notes per cell
     :return: an image
     """
     if height==None:
@@ -123,25 +124,29 @@ def drawsudokuv2(width:int=3,height:int=None,cell_size:int=60,skin:dict=None,boa
         "border2": "#cfdbe4",
         "font1": "#34495e",
         "font2": "#2980b9",
+        "font3": "#7f8c8d",
         "select":"#3cd3ff",
     }
     # safeguards in case someone doesnt pass a skin or passes a skin thats missing some values
     if skin==None:
         skin=default_skin
     else:
-        if not skin['background']or not skin['border1'] or not skin["border2"] or not skin['font1'] or not skin['font2']:
+        if not skin['background']or not skin['border1'] or not skin["border2"] or not skin['font1'] or not skin['font2'] or not skin['font3']:
             print('skin missing certain values, defaulting to the default skin')
             skin=default_skin
     
     # attempt to load the funny papyrus font
     try:
-        font = ImageFont.truetype("papyrus-pixel.ttf", size=cell_size)
+        font = ImageFont.truetype("papyrus-pixel.ttf", size=cell_size*0.9)
+        fontsmall = ImageFont.truetype("papyrus-pixel.ttf", size=cell_size*0.3)
     except: # aw man it didnt load
         try: # try to load the sands font
-            font = ImageFont.truetype("Comic Sans MS Pixel.ttf", size=cell_size)
+            font = ImageFont.truetype("Comic Sans MS Pixel.ttf", size=cell_size*0.9)
+            fontsmall = ImageFont.truetype("Comic Sans MS Pixel.ttf", size=cell_size//3)
         except: # aw man it didnt load either
             # load the default font
-            font = ImageFont.load_default(size=cell_size)
+            font = ImageFont.load_default(size=cell_size*0.9)
+            fontsmall = ImageFont.load_default(size=cell_size//3)
     
     # make a BLANK image
     img = Image.new('RGB',size=[image_width,image_height],color=skin['background'])
@@ -204,6 +209,29 @@ def drawsudokuv2(width:int=3,height:int=None,cell_size:int=60,skin:dict=None,boa
 
                         #draw.rectangle((bbox[0],bbox[1],bbox[2],bbox[3]),outline="red") # debug stuff nothing important
                         draw.text((text_x, text_y), number, fill=skin['font2'], font=font)
+
+    # draw the note numbers
+    for y in range(height*width):
+        for x in range(width*height):
+            if note_board!=None:
+                if note_board[y][x] and ((not board[y][x]>0)if board[y][x] is not None else True) and ((not user_board[y][x]>0)if user_board[y][x] is not None else True):
+                    for notenum in note_board[y][x]:
+                        if notenum>0:
+                            cell_x = x * cell_size + cell_size * ((notenum-1) % 3) // 3
+                            cell_y = y * cell_size + cell_size * ((notenum-1) //3) // 3
+                            number = str(notenum)
+                
+                            # Get text size using textbbox (replacement for getsize)
+                            bbox = draw.textbbox((cell_x, cell_y), number, font=fontsmall)
+                            text_width = bbox[2] - bbox[0]
+                            text_height = bbox[3] - bbox[1]
+                
+                            # Calculate text position (centered in cell) <- whoever wrote this is now lying actually
+                            text_x = cell_x + (cell_size - text_width) // 2 - (cell_size//3.5)
+                            text_y = (cell_y + (cell_size - text_height) // 2 - (cell_size//2.5))
+
+                            #draw.rectangle((bbox[0],bbox[1],bbox[2],bbox[3]),outline="red") # debug stuff nothing important
+                            draw.text((text_x, text_y), number, fill=skin['font3'], font=fontsmall)
 
     
     # return the image
